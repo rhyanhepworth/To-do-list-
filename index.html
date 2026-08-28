@@ -181,6 +181,25 @@
     background: #6a82fb;
     color: #fff;
   }
+
+  .clear-completed-btn {
+    border: none;
+    background: transparent;
+    color: #888;
+    font-size: 13px;
+    padding: 4px 0;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.2s;
+  }
+
+  .clear-completed-btn:hover {
+    color: #fc5c7d;
+  }
+
+  .clear-completed-btn[hidden] {
+    display: none;
+  }
 </style>
 </head>
 <body>
@@ -202,6 +221,7 @@
         <button class="filter-btn" data-filter="active">Active</button>
         <button class="filter-btn" data-filter="completed">Completed</button>
       </div>
+      <button class="clear-completed-btn" id="clear-completed-btn" hidden>Clear completed</button>
     </div>
   </div>
 
@@ -212,6 +232,7 @@
     const footer = document.getElementById('footer');
     const taskCount = document.getElementById('task-count');
     const filterBtns = document.querySelectorAll('.filter-btn');
+    const clearCompletedBtn = document.getElementById('clear-completed-btn');
 
     let currentFilter = 'all';
 
@@ -246,7 +267,18 @@
 
       const remaining = [...items].filter(item => !item.classList.contains('done')).length;
       taskCount.textContent = `${remaining} item${remaining === 1 ? '' : 's'} left`;
+
+      clearCompletedBtn.hidden = [...items].every(item => !item.classList.contains('done'));
     }
+
+    function clearCompleted() {
+      taskList.querySelectorAll('.task-item.done').forEach(item => item.remove());
+      renderEmptyState();
+      saveTasks();
+      refreshView();
+    }
+
+    clearCompletedBtn.addEventListener('click', clearCompleted);
 
     function refreshView() {
       applyFilter();
