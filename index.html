@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>To-Do List</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #6a82fb, #fc5c7d);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .card {
+    background: #fff;
+    width: 100%;
+    max-width: 420px;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    padding: 32px;
+  }
+
+  h1 {
+    margin: 0 0 20px;
+    text-align: center;
+    font-size: 24px;
+    color: #333;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  #task-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  #task-input:focus {
+    border-color: #6a82fb;
+  }
+
+  #add-btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    background: #6a82fb;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  #add-btn:hover {
+    background: #5a70e0;
+  }
+
+  #task-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #f7f8fc;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .task-item:hover {
+    background: #eef0fb;
+  }
+
+  .task-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    cursor: pointer;
+    accent-color: #6a82fb;
+  }
+
+  .task-text {
+    flex: 1;
+    font-size: 15px;
+    color: #333;
+    word-break: break-word;
+  }
+
+  .task-item.done .task-text {
+    text-decoration: line-through;
+    color: #aaa;
+  }
+
+  .delete-btn {
+    border: none;
+    background: transparent;
+    color: #ccc;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+  }
+
+  .delete-btn:hover {
+    color: #fff;
+    background: #fc5c7d;
+  }
+
+  .empty-message {
+    text-align: center;
+    color: #aaa;
+    font-size: 14px;
+    padding: 20px 0;
+  }
+</style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>My To-Do List</h1>
+
+    <div class="input-row">
+      <input type="text" id="task-input" placeholder="Add a new task..." autofocus>
+      <button id="add-btn">Add</button>
+    </div>
+
+    <ul id="task-list"></ul>
+  </div>
+
+  <script>
+    const taskInput = document.getElementById('task-input');
+    const addBtn = document.getElementById('add-btn');
+    const taskList = document.getElementById('task-list');
+
+    function renderEmptyState() {
+      if (taskList.children.length === 0) {
+        const li = document.createElement('li');
+        li.className = 'empty-message';
+        li.textContent = 'No tasks yet — add one above!';
+        taskList.appendChild(li);
+      }
+    }
+
+    function removeEmptyState() {
+      const empty = taskList.querySelector('.empty-message');
+      if (empty) empty.remove();
+    }
+
+    function addTask() {
+      const text = taskInput.value.trim();
+      if (!text) return;
+
+      removeEmptyState();
+
+      const li = document.createElement('li');
+      li.className = 'task-item';
+
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.addEventListener('change', () => {
+        li.classList.toggle('done', checkbox.checked);
+      });
+
+      const span = document.createElement('span');
+      span.className = 'task-text';
+      span.textContent = text;
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'delete-btn';
+      deleteBtn.textContent = '×';
+      deleteBtn.addEventListener('click', () => {
+        li.remove();
+        renderEmptyState();
+      });
+
+      li.appendChild(checkbox);
+      li.appendChild(span);
+      li.appendChild(deleteBtn);
+      taskList.appendChild(li);
+
+      taskInput.value = '';
+      taskInput.focus();
+    }
+
+    addBtn.addEventListener('click', addTask);
+    taskInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addTask();
+    });
+
+    renderEmptyState();
+  </script>
+
+</body>
+</html>
