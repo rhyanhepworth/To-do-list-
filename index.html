@@ -137,6 +137,50 @@
     font-size: 14px;
     padding: 20px 0;
   }
+
+  .task-item.filtered-out {
+    display: none;
+  }
+
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+    font-size: 13px;
+    color: #888;
+  }
+
+  .footer[hidden] {
+    display: none;
+  }
+
+  .filters {
+    display: flex;
+    gap: 4px;
+  }
+
+  .filter-btn {
+    border: none;
+    background: transparent;
+    color: #888;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .filter-btn:hover {
+    background: #f0f1fa;
+  }
+
+  .filter-btn.active {
+    background: #6a82fb;
+    color: #fff;
+  }
 </style>
 </head>
 <body>
@@ -150,12 +194,26 @@
     </div>
 
     <ul id="task-list"></ul>
+
+    <div class="footer" id="footer" hidden>
+      <span id="task-count"></span>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="active">Active</button>
+        <button class="filter-btn" data-filter="completed">Completed</button>
+      </div>
+    </div>
   </div>
 
   <script>
     const taskInput = document.getElementById('task-input');
     const addBtn = document.getElementById('add-btn');
     const taskList = document.getElementById('task-list');
+    const footer = document.getElementById('footer');
+    const taskCount = document.getElementById('task-count');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+
+    let currentFilter = 'all';
 
     function renderEmptyState() {
       if (taskList.children.length === 0) {
@@ -170,6 +228,38 @@
       const empty = taskList.querySelector('.empty-message');
       if (empty) empty.remove();
     }
+
+    function applyFilter() {
+      const items = taskList.querySelectorAll('.task-item');
+      items.forEach(item => {
+        const done = item.classList.contains('done');
+        const show = currentFilter === 'all'
+          || (currentFilter === 'active' && !done)
+          || (currentFilter === 'completed' && done);
+        item.classList.toggle('filtered-out', !show);
+      });
+    }
+
+    function updateFooter() {
+      const items = taskList.querySelectorAll('.task-item');
+      footer.hidden = items.length === 0;
+
+      const remaining = [...items].filter(item => !item.classList.contains('done')).length;
+      taskCount.textContent = `${remaining} item${remaining === 1 ? '' : 's'} left`;
+    }
+
+    function refreshView() {
+      applyFilter();
+      updateFooter();
+    }
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentFilter = btn.dataset.filter;
+        filterBtns.forEach(b => b.classList.toggle('active', b === btn));
+        applyFilter();
+      });
+    });
 
     const STORAGE_KEY = 'todo-tasks';
 
@@ -202,6 +292,7 @@
       checkbox.addEventListener('change', () => {
         li.classList.toggle('done', checkbox.checked);
         saveTasks();
+        refreshView();
       });
 
       const span = document.createElement('span');
@@ -215,6 +306,7 @@
         li.remove();
         renderEmptyState();
         saveTasks();
+        refreshView();
       });
 
       li.appendChild(checkbox);
@@ -230,6 +322,7 @@
       removeEmptyState();
       taskList.appendChild(createTaskElement(text, false));
       saveTasks();
+      refreshView();
 
       taskInput.value = '';
       taskInput.focus();
@@ -244,6 +337,7 @@
       taskList.appendChild(createTaskElement(task.text, task.done));
     });
     renderEmptyState();
+    refreshView();
   </script>
 
 </body>
