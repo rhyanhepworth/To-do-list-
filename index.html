@@ -171,19 +171,37 @@
       if (empty) empty.remove();
     }
 
-    function addTask() {
-      const text = taskInput.value.trim();
-      if (!text) return;
+    const STORAGE_KEY = 'todo-tasks';
 
-      removeEmptyState();
+    function saveTasks() {
+      const tasks = [...taskList.querySelectorAll('.task-item')].map(li => ({
+        text: li.querySelector('.task-text').textContent,
+        done: li.classList.contains('done')
+      }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
 
+    function loadTasks() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return [];
+      }
+    }
+
+    function createTaskElement(text, done) {
       const li = document.createElement('li');
       li.className = 'task-item';
+      if (done) li.classList.add('done');
 
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
+      checkbox.checked = done;
       checkbox.addEventListener('change', () => {
         li.classList.toggle('done', checkbox.checked);
+        saveTasks();
       });
 
       const span = document.createElement('span');
@@ -196,12 +214,22 @@
       deleteBtn.addEventListener('click', () => {
         li.remove();
         renderEmptyState();
+        saveTasks();
       });
 
       li.appendChild(checkbox);
       li.appendChild(span);
       li.appendChild(deleteBtn);
-      taskList.appendChild(li);
+      return li;
+    }
+
+    function addTask() {
+      const text = taskInput.value.trim();
+      if (!text) return;
+
+      removeEmptyState();
+      taskList.appendChild(createTaskElement(text, false));
+      saveTasks();
 
       taskInput.value = '';
       taskInput.focus();
@@ -212,6 +240,9 @@
       if (e.key === 'Enter') addTask();
     });
 
+    loadTasks().forEach(task => {
+      taskList.appendChild(createTaskElement(task.text, task.done));
+    });
     renderEmptyState();
   </script>
 
